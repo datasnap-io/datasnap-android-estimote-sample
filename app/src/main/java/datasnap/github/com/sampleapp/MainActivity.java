@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,8 +44,8 @@ import com.estimote.sdk.utils.L;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +70,6 @@ public class MainActivity extends Activity implements
     private static final int REQUEST_ENABLE_BT = 1234;
     private static final Region ALL_ESTIMOTE_BEACONS_REGION = new Region("rid", null, null, null);
     private BeaconManager beaconManager;
-    private LeDeviceListAdapter adapter;
     private HashMap<String, Beacon> beaconDictionary;
     // A request to connect to Location Services
     private LocationRequest mLocationRequest;
@@ -80,8 +81,13 @@ public class MainActivity extends Activity implements
     SharedPreferences.Editor mEditor;
     private Location currentLocation;
     Address address;
-    private TextView list;
+    private TextView textView;
     boolean mUpdatesRequested = false;
+    private Device device;
+    private String[] organizationIds = {Defaults.ORGANISATION_ID};
+    private String[] projectIds = {Defaults.PROJECT_ID};
+    private ArrayList<IEvent> eventStore;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,12 +119,12 @@ public class MainActivity extends Activity implements
         L.enableDebugLogging(true);
         // Configure BeaconManager.
         beaconManager = new BeaconManager(this);
-        adapter = new LeDeviceListAdapter(this);
-        list = (TextView) findViewById(R.id.log_text);
-        list.setMovementMethod(new ScrollingMovementMethod());
+        textView = (TextView) findViewById(R.id.log_text);
+        textView.setMovementMethod(new ScrollingMovementMethod());
         beaconDictionary = new HashMap<String, Beacon>();
-        getDeviceInfo();
-
+        device = getDeviceInfo();
+        // create event store
+        eventStore = new ArrayList<IEvent>();
         beaconManager.setRangingListener(new BeaconManager.RangingListener() {
             @Override
             public void onBeaconsDiscovered(Region region, final List<Beacon> beacons) {
@@ -132,73 +138,95 @@ public class MainActivity extends Activity implements
                         for (Beacon beacon : beacons) {
                             if (!beaconDictionary.containsKey(beacon.getMacAddress())) {
                                 beaconDictionary.put(beacon.getMacAddress(), beacon);
-                                list.append(getTime() + " " + "BEACON SIGHTING EVENT!" + System.getProperty("line.separator")
-                                        + "Beacon name: " + beacon.getName()
-                                        + System.getProperty("line.separator") +
-                                        "(mac address:" + beacon.getMacAddress() + ")"
-                                        + System.getProperty("line.separator") + "Dispatched to Datasnap for data analysis"
-                                        + System.getProperty("line.separator"));
-
-                                String[] organizationIds = {Defaults.ORGANISATION_ID};
-                                String[] projectIds = {Defaults.PROJECT_ID};
-                                String eventType = "beacon_sighting";
-
-                                User user = new User();
-                                PropId propId = new PropId();
-                                propId.setMobileDeviceIosIdfa("1a847de9f24b18eee3fac634b833b7887b32dea3");
-                                propId.setGlobalDistinctId("userid1234");
-                                user.setId(propId);
-                                Place majorPlace = new Place();
-                                majorPlace.setName("major");
-                                Place minorPlace = new Place();
-                                minorPlace.setName("major");
-
-
-                                Beacon1 beacon1 = new Beacon1();
-                                DeviceInfo deviceInfo = new DeviceInfo();
-                                deviceInfo.setCreated("2014-08-22 14:48:02 +0000");
-
-                                Device device = new Device();
-                                device.setUserAgent("Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30");
-                                device.setIpAddress("127.1.1.1");
-                                device.setPlatform("ios");
-                                device.setOsVersion("7.0");
-                                device.setModel("iPhone5");
-                                device.setManufacturer("Apple");
-                                device.setName("hashed device name");
-                                device.setVendorId("63A7355F-5AF2-4E20-BE55-C3E80D0305B1");
-                                device.setCarrierName("Verizon");
-                                device.setCountryCode("1");
-                                device.setNetworkCode("327");
-                                deviceInfo.setDevice(device);
-
-                                Beacon1 beacon2 = new Beacon1();
-                                String beaconid2 = "SHDG-test";
-                                beacon2.setIdentifier(beaconid2);
-
-                                Map<String, Object> additionalProperties = new HashMap<String, Object>();
-                                additionalProperties.put("beacontest", beacon2);
-                                additionalProperties.put("beacontest2", beacon2);
-
-                                IEvent event = new BeaconEvent(eventType, organizationIds, projectIds, majorPlace, minorPlace, user, beacon1,
-                                        deviceInfo, additionalProperties);
-                                Analytics.track(event);
+                                appendToLog(beacon);
+                                createBeaconSightingEvent();
+                              //  Analytics.track(event);
+                                // addToEventStore();
                             }
                         }
                         getActionBar().setSubtitle("Found beacons: " + beacons.size());
-                        getLocation();
-                        getAddress();
+                        dispatchEvent();
                     }
                 });
             }
         });
     }
 
-    private void getDeviceInfo() {
+
+    public void createBeaconSightingEvent(){
+        String eventType = "beacon_sighting";
+        User user = new User();
+        PropId propId = new PropId();
+        propId.setMobileDeviceIosIdfa("1a847de9f24b18eee3fac634b833b7887b32dea3");
+        propId.setGlobalDistinctId("userid1234");
+        user.setId(propId);
+        Place majorPlace = new Place();
+        majorPlace.setName("major");
+        Place minorPlace = new Place();
+        minorPlace.setName("major");
+
+        Beacon1 beacon1 = new Beacon1();
+        DeviceInfo deviceInfo = new DeviceInfo();
+        deviceInfo.setCreated("2014-08-22 14:48:02 +0000");
+
+        deviceInfo.setDevice(device);
+
+        Beacon1 beacon2 = new Beacon1();
+        String beaconid2 = "SHDG-test";
+        beacon2.setIdentifier(beaconid2);
+
+        Map<String, Object> additionalProperties = new HashMap<String, Object>();
+        additionalProperties.put("beacontest", beacon2);
+        additionalProperties.put("beacontest2", beacon2);
+
+        IEvent event = new BeaconEvent(eventType, organizationIds, projectIds, majorPlace, minorPlace, user, beacon1,
+                deviceInfo, additionalProperties);
+        addToEventStore(event);
+    }
+
+
+    public void addToEventStore(IEvent event){
+        getLocation();
+        getAddress();
+        eventStore.add(event) ;
+
+    }
+
+    public void dispatchEvent(){
+   //    Analytics.track(eventStore.get(0));
+    }
+
+
+    private void appendToLog(Beacon beacon){
+
+        textView.append(getTime() + " " + "BEACON SIGHTING EVENT!" + System.getProperty("line.separator")
+                + "Beacon name: " + beacon.getName()
+                + System.getProperty("line.separator") +
+                "(mac address:" + beacon.getMacAddress() + ")"
+                + System.getProperty("line.separator") + "Dispatched to Datasnap for data analysis"
+                + System.getProperty("line.separator"));
+
+    }
+
+
+    private Device getDeviceInfo() {
+
         System.getProperty("os.version"); // OS version
-        String sdk = android.os.Build.VERSION.SDK;     // API Level
-        String device = android.os.Build.DEVICE;          // Device
-        String model = android.os.Build.MODEL;          // Model
+        Device device = new Device();
+        //  device.setUserAgent("Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30");
+        device.setIpAddress(getIpAddress());
+        device.setPlatform(android.os.Build.VERSION.SDK);
+        device.setOsVersion("7.0");
+        device.setModel(android.os.Build.MODEL);
+        device.setManufacturer(android.os.Build.MANUFACTURER);
+        device.setName(android.os.Build.DEVICE);
+        device.setVendorId("63A7355F-5AF2-4E20-BE55-C3E80D0305B1");
+        device.setCarrierName("Verizon");
+        device.setCountryCode("1");
+        device.setNetworkCode("327");
+
+     //   String sdk = android.os.Build.VERSION.SDK;     // API Level
+     //   String device = android.os.Build.DEVICE;          // Device
         String product = android.os.Build.PRODUCT;
         String user = android.os.Build.USER;
         //   String version = android.os.Build.;
@@ -208,6 +236,8 @@ public class MainActivity extends Activity implements
         String id = android.os.Build.ID;
         String manufacturer = android.os.Build.MANUFACTURER;
         String type = android.os.Build.TYPE;
+
+        return device;
     }
 
 
@@ -293,10 +323,17 @@ public class MainActivity extends Activity implements
         super.onStop();
     }
 
+    public String getIpAddress(){
+        WifiManager wifiMan = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInf = wifiMan.getConnectionInfo();
+        int ipAddress = wifiInf.getIpAddress();
+        String ip = String.format("%d.%d.%d.%d", (ipAddress & 0xff),(ipAddress >> 8 & 0xff),(ipAddress >> 16 & 0xff),(ipAddress >> 24 & 0xff));
+        return ip;
+    }
+
 
     private void connectToService() {
         getActionBar().setSubtitle("Scanning...");
-        adapter.replaceWith(Collections.<Beacon>emptyList());
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
             public void onServiceReady() {
@@ -339,7 +376,6 @@ public class MainActivity extends Activity implements
                     try {
                         Class<?> clazz = Class.forName(getIntent().getStringExtra(EXTRAS_TARGET_ACTIVITY));
                         Intent intent = new Intent(MainActivity.this, clazz);
-                        intent.putExtra(EXTRAS_BEACON, adapter.getItem(position));
                         startActivity(intent);
                     } catch (ClassNotFoundException e) {
                         Log.e(TAG, "Finding class by name failed", e);
@@ -478,7 +514,7 @@ public class MainActivity extends Activity implements
 
             // Get the current location
             currentLocation = mLocationClient.getLastLocation();
-            list.append(currentLocation.toString());
+            textView.append(currentLocation.toString());
 
             // Turn the indefinite activity indicator on
             //     mActivityIndicator.setVisibility(View.VISIBLE);
@@ -649,10 +685,10 @@ public class MainActivity extends Activity implements
              */
             Geocoder geocoder = new Geocoder(localContext, Locale.getDefault());
 
-            // Get the current location from the input parameter list
+            // Get the current location from the input parameter textView
             Location location = params[0];
 
-            // Create a list to contain the result address
+            // Create a textView to contain the result address
             List<Address> addresses = null;
 
             // Try to get an address for the current location. Catch IO or network problems.
