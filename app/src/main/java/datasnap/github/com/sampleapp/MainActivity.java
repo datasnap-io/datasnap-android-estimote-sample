@@ -132,9 +132,6 @@ public class MainActivity extends Activity implements
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        // Note that beacons reported here are already sorted by estimated
-                        // distance between device and beacon.
-
                         for (Beacon beacon : beacons) {
                             if (!beaconDictionary.containsKey(beacon.getMacAddress())) {
                                 beaconDictionary.put(beacon.getMacAddress(), beacon);
@@ -145,7 +142,7 @@ public class MainActivity extends Activity implements
                             }
                         }
                         getActionBar().setSubtitle("Found beacons: " + beacons.size());
-                        dispatchEvent();
+                      //  dispatchEvent();
                     }
                 });
             }
@@ -162,6 +159,7 @@ public class MainActivity extends Activity implements
         user.setId(propId);
         Place majorPlace = new Place();
         majorPlace.setName("major");
+
         Place minorPlace = new Place();
         minorPlace.setName("major");
 
@@ -186,16 +184,16 @@ public class MainActivity extends Activity implements
 
 
     public void addToEventStore(IEvent event){
-        getLocation();
-        getAddress();
+       // getLocation();
+      //  getAddress();
         eventStore.add(event) ;
+        dispatchEvent(event);
 
     }
 
-    public void dispatchEvent(){
-   //    Analytics.track(eventStore.get(0));
+    public void dispatchEvent(IEvent event){
+    Analytics.track(event);
     }
-
 
     private void appendToLog(Beacon beacon){
 
@@ -205,12 +203,9 @@ public class MainActivity extends Activity implements
                 "(mac address:" + beacon.getMacAddress() + ")"
                 + System.getProperty("line.separator") + "Dispatched to Datasnap for data analysis"
                 + System.getProperty("line.separator"));
-
     }
 
-
     private Device getDeviceInfo() {
-
         System.getProperty("os.version"); // OS version
         Device device = new Device();
         //  device.setUserAgent("Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30");
@@ -224,19 +219,6 @@ public class MainActivity extends Activity implements
         device.setCarrierName("Verizon");
         device.setCountryCode("1");
         device.setNetworkCode("327");
-
-     //   String sdk = android.os.Build.VERSION.SDK;     // API Level
-     //   String device = android.os.Build.DEVICE;          // Device
-        String product = android.os.Build.PRODUCT;
-        String user = android.os.Build.USER;
-        //   String version = android.os.Build.;
-        String brand = android.os.Build.BRAND;
-        String hardware = android.os.Build.HARDWARE;
-        String host = android.os.Build.HOST;
-        String id = android.os.Build.ID;
-        String manufacturer = android.os.Build.MANUFACTURER;
-        String type = android.os.Build.TYPE;
-
         return device;
     }
 
@@ -511,14 +493,9 @@ public class MainActivity extends Activity implements
         }
 
         if (servicesConnected()) {
-
             // Get the current location
             currentLocation = mLocationClient.getLastLocation();
             textView.append(currentLocation.toString());
-
-            // Turn the indefinite activity indicator on
-            //     mActivityIndicator.setVisibility(View.VISIBLE);
-
             // Start the background task
             (new MainActivity.GetAddressTask(this)).execute(currentLocation);
         }
