@@ -92,7 +92,7 @@ public class MainActivity extends Activity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Analytics.initialize(getApplicationContext());
+        Analytics.initialize(getApplicationContext());  // add config here as well...
         setContentView(R.layout.activity_main);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         // Create a new global location parameters object
@@ -192,6 +192,8 @@ public class MainActivity extends Activity implements
     }
 
     public void dispatchEvent(IEvent event){
+         getLocation();
+         getAddress();
     Analytics.track(event);
     }
 
@@ -350,22 +352,6 @@ public class MainActivity extends Activity implements
     }
 
 
-    private AdapterView.OnItemClickListener createOnItemClickListener() {
-        return new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (getIntent().getStringExtra(EXTRAS_TARGET_ACTIVITY) != null) {
-                    try {
-                        Class<?> clazz = Class.forName(getIntent().getStringExtra(EXTRAS_TARGET_ACTIVITY));
-                        Intent intent = new Intent(MainActivity.this, clazz);
-                        startActivity(intent);
-                    } catch (ClassNotFoundException e) {
-                        Log.e(TAG, "Finding class by name failed", e);
-                    }
-                }
-            }
-        };
-    }
 
     /*
    * Handle results returned to this Activity by other Activities started with
