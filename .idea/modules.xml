@@ -3,9 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/DatasnapEstimoteAndroidSample.iml" filepath="$PROJECT_DIR$/DatasnapEstimoteAndroidSample.iml" />
-      <module fileurl="file://$PROJECT_DIR$/MyApplication.iml" filepath="$PROJECT_DIR$/MyApplication.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/core-1.4.3/core-1.4.3.iml" filepath="$PROJECT_DIR$/core-1.4.3/core-1.4.3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datasnapsdk/datasnapsdk.iml" filepath="$PROJECT_DIR$/datasnapsdk/datasnapsdk.iml" />
     </modules>
   </component>
 </project>
