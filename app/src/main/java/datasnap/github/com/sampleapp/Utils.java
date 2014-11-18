@@ -3,10 +3,18 @@ package datasnap.github.com.sampleapp;
 import android.content.Context;
 import android.location.Location;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+
 /**
  * Defines app-wide constants and utilities
  */
-public final class LocationUtils {
+public final class Utils {
 
     // Debugging tag for the application
     public static final String APPTAG = "LocationSample";
@@ -48,6 +56,18 @@ public final class LocationUtils {
     // Create an empty string for initializing strings
     public static final String EMPTY_STRING = new String();
 
+
+
+    public static String getTime() {
+        Calendar c = Calendar.getInstance();
+        Date d = c.getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss ZZ");
+        String currentDateandTime = sdf.format(d);
+        return currentDateandTime;
+    }
+
+
+
     /**
      * Get the latitude and longitude from the Location object returned by
      * Location Services.
@@ -56,16 +76,10 @@ public final class LocationUtils {
      * @return The latitude and longitude of the current location, or null if no
      * location is available.
      */
+
     public static String getLatLng(Context context, Location currentLocation) {
         // If the location is valid
         if (currentLocation != null) {
-
-            // Return the latitude and longitude as strings
-      /*      return context.getString(
-                    R.string.latitude_longitude,
-                    currentLocation.getLatitude(),
-                    currentLocation.getLongitude());*/
-
             return ""+currentLocation.getLatitude()+
             currentLocation.getLongitude();
         } else {
