@@ -43,9 +43,9 @@ import java.util.Map;
 import com.google.android.gms.location.LocationListener;
 
 
-public class MainActivity extends Activity  {
+public class DataSnapEstimoteActivity extends Activity  {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = DataSnapEstimoteActivity.class.getSimpleName();
     private static final int REQUEST_ENABLE_BT = 1234;
     private static final Region ALL_ESTIMOTE_BEACONS_REGION = new Region("rid", null, null, null);
     // Handle to SharedPreferences for this app
@@ -65,6 +65,9 @@ public class MainActivity extends Activity  {
     private Location location;
     private LocationListener locationListener;
 
+
+
+    // Estimote Beaconmanager intiliazed & monitors for beacons
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,7 +116,9 @@ public class MainActivity extends Activity  {
         });
     }
 
-
+     /*  Creates an example datasnap event - for more event types see
+     http://datasnap-io.github.io/sendingdata/
+     */
     public void createBeaconSightingEvent(){
         String eventType = "beacon_sighting";
         User user = new User();
@@ -154,14 +159,18 @@ public class MainActivity extends Activity  {
     Analytics.track(event);
     }
 
+/*
+    outputs event to sample app UI display
+*/
     private void appendToLog(Beacon beacon){
-        textView.append(Utils.getTime() + System.getProperty("line.separator")+
-                " " + "BEACON SIGHTING EVENT!" + System.getProperty("line.separator")
+        textView.append("Time: " +Utils.getTime() + System.getProperty("line.separator")
+                + "Event Type: Beacon Sighting" + System.getProperty("line.separator")
                 + "Beacon name: " + beacon.getName()
                 + System.getProperty("line.separator") +
                 "(mac address:" + beacon.getMacAddress() + ")"
-                + System.getProperty("line.separator") + "Dispatched to Datasnap for data analysis"
-                + System.getProperty("line.separator"));
+                + System.getProperty("line.separator") + "Result: "+ "Dispatched to Datasnap for data analysis"
+                + System.getProperty("line.separator")
+        + "*******************************" + System.getProperty("line.separator"));
     }
 
     private Device getDeviceInfo() {
@@ -247,7 +256,7 @@ public class MainActivity extends Activity  {
                 try {
                     beaconManager.startRanging(ALL_ESTIMOTE_BEACONS_REGION);
                 } catch (RemoteException e) {
-                    Toast.makeText(MainActivity.this, "Cannot start ranging, something terrible happened",
+                    Toast.makeText(DataSnapEstimoteActivity.this, "Cannot start ranging, something terrible happened",
                             Toast.LENGTH_LONG).show();
                     Log.e(TAG, "Cannot start ranging", e);
                 }
@@ -283,6 +292,9 @@ public class MainActivity extends Activity  {
     }
 
 
+/*
+    optional address resolution using geocoding
+*/
     public String getAddress(Location location) {
         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
         List<Address> addresses = null;
