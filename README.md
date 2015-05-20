@@ -53,10 +53,48 @@ dependencies {
 #### Include latest SDK in this sample App:
 
 * Git clone the latest SDK Repo: git@github.com:datasnap-io/datasnap-android-sdk.git
-* Opwn project setting and add new module and select the cloned folder location of the SDK.
-* Add link to folder in the app/build.gradle file:
+* In the SDK folder run
+* place the aar archive into the datasnapsdk folder and make sure the build.gradle file is in this folder still or add it in if its not:
+* 
+```
+configurations.create("default")
+artifacts.add("default", file('datasnapsdk.aar'))
+```
 
+Then make sure this entry is still in the app/build.gradle file:
 ```
 dependencies {
-    compile project(':datasnapsdk-folder')
+    compile project(':datasnapsdk')
 ```
+
+
+#### Libs location
+
+You can also use a libs folder to organizae your dependencies:
+
+* Create a /libs directory inside your project and copy all the AAR files there.
+
+*Edit your build.gradle file, and add a "flatDir" entry to your repositories like so:
+
+    repositories {
+        mavenCentral()
+        flatDir {
+            dirs 'libs'
+        }
+    }
+
+* Edit your build.gradle file to add this AAR as a dependency like below:
+
+#### Sampel app in SDK Repo
+
+Also we included a sample app in the SDK project itself to make it even easier to test the latest SDK code:
+
+https://github.com/datasnap-io/datasnap-android-sdk/tree/development/sampleapp
+
+### Add below permissions to AndroidManifest.xml  Note we Also descibe what they are used for:
+
+https://github.com/datasnap-io/datasnap-android-sdk/tree/development/sampleapp
+
+
+
+
