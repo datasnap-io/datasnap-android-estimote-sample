@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
         applicationId "datasnap.github.com.sampleapp"
@@ -13,7 +13,7 @@ android {
     }
     buildTypes {
         release {
-            runProguard false
+            runProguard minifyEnabled
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

@@ -1,1 +1,1 @@
-include ':app', ':datasnapsdk'
+include ':app', 'datasnapsdk'
