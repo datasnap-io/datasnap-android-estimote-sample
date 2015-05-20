@@ -41,3 +41,22 @@ Building the sample then depends on your build tools.
 
 * Open Android Studio and select `Import Project`
 * Select the file `build.gradle` in the root of the cloned repo
+
+
+There is a /datasnapsdk folder that already had a precompiled aar archive that is linked in the app/build.gradle file:
+
+```
+dependencies {
+    compile project(':datasnapsdk')
+```
+
+#### Include latest SDK in this sample App:
+
+* Git clone the latest SDK Repo: git@github.com:datasnap-io/datasnap-android-sdk.git
+* Opwn project setting and add new module and select the cloned folder location of the SDK.
+* Add link to folder in the app/build.gradle file:
+
+```
+dependencies {
+    compile project(':datasnapsdk-folder')
+```
